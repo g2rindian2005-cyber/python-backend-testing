@@ -1,206 +1,568 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
-  <title>User API Frontend</title>
-  <style>
-    body {
-      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-      background-color: #eef2f7;
-      margin: 40px;
-      color: #333;
-    }
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Auth Gateway</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600;700&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg:#0a121c;
+    --surface:#0f1c29;
+    --surface-2:#132434;
+    --border:#1f3346;
+    --text:#e7edf3;
+    --muted:#7791a6;
+    --muted-dim:#4f6579;
+    --cyan:#33d6c0;
+    --cyan-dim:#1b6b60;
+    --amber:#f0a83d;
+    --red:#ef5b4e;
+    --mono:'JetBrains Mono', ui-monospace, monospace;
+    --sans:'Inter', system-ui, -apple-system, sans-serif;
+  }
+  *{box-sizing:border-box;}
+  html,body{margin:0;padding:0;}
+  body{
+    background:
+      radial-gradient(1200px 500px at 15% -10%, rgba(51,214,192,0.08), transparent),
+      var(--bg);
+    color:var(--text);
+    font-family:var(--sans);
+    min-height:100vh;
+    padding:0 0 64px;
+  }
 
-    .header {
-      display: flex;
-      align-items: center;
-      gap: 15px;
-    }
+  /* ---------- Header ---------- */
+  header{
+    border-bottom:1px solid var(--border);
+    padding:22px 32px;
+    display:flex;
+    justify-content:space-between;
+    align-items:center;
+    flex-wrap:wrap;
+    gap:12px;
+  }
+  .brand{display:flex;align-items:baseline;gap:12px;}
+  .brand h1{
+    font-family:var(--mono);
+    font-size:19px;
+    font-weight:700;
+    margin:0;
+    letter-spacing:0.01em;
+  }
+  .brand h1 .dim{color:var(--muted-dim);font-weight:500;}
+  .brand .eyebrow{
+    font-family:var(--mono);
+    font-size:11px;
+    color:var(--muted);
+    letter-spacing:0.08em;
+    text-transform:uppercase;
+  }
+  .health{
+    display:flex;
+    align-items:center;
+    gap:8px;
+    font-family:var(--mono);
+    font-size:12px;
+    color:var(--muted);
+    padding:6px 12px;
+    border:1px solid var(--border);
+    border-radius:20px;
+    background:var(--surface);
+  }
+  .dot{
+    width:8px;height:8px;border-radius:50%;
+    background:var(--muted-dim);
+    flex-shrink:0;
+  }
+  .dot.online{background:var(--cyan);box-shadow:0 0 0 3px rgba(51,214,192,0.18);animation:pulse 2s infinite;}
+  .dot.offline{background:var(--red);box-shadow:0 0 0 3px rgba(239,91,78,0.18);}
+  @keyframes pulse{
+    0%,100%{box-shadow:0 0 0 3px rgba(51,214,192,0.18);}
+    50%{box-shadow:0 0 0 6px rgba(51,214,192,0.06);}
+  }
 
-    .header img {
-      height: 50px;
-    }
+  /* ---------- Layout ---------- */
+  main{
+    max-width:1080px;
+    margin:0 auto;
+    padding:36px 32px 0;
+    display:grid;
+    grid-template-columns:340px 1fr;
+    gap:24px;
+  }
+  @media (max-width:860px){
+    main{grid-template-columns:1fr;padding:28px 18px 0;}
+    header{padding:18px;}
+  }
 
-    h2 {
-      color: #2c3e50;
-      margin: 0;
-    }
+  .panel{
+    background:var(--surface);
+    border:1px solid var(--border);
+    border-radius:10px;
+    padding:20px;
+  }
+  .panel + .panel{margin-top:20px;}
+  .panel h2{
+    font-family:var(--mono);
+    font-size:11px;
+    text-transform:uppercase;
+    letter-spacing:0.09em;
+    color:var(--muted);
+    margin:0 0 14px;
+    display:flex;
+    align-items:center;
+    gap:8px;
+  }
+  .panel h2::before{
+    content:'';
+    width:3px;height:12px;
+    background:var(--cyan-dim);
+    display:inline-block;
+  }
 
-    h3 {
-      color: #34495e;
-      margin-top: 40px;
-    }
+  /* ---------- Left column: connection + log ---------- */
+  label{
+    display:block;
+    font-family:var(--mono);
+    font-size:11px;
+    text-transform:uppercase;
+    letter-spacing:0.06em;
+    color:var(--muted);
+    margin-bottom:6px;
+  }
+  input[type=text], input[type=email], input[type=password]{
+    width:100%;
+    padding:10px 12px;
+    background:var(--surface-2);
+    border:1px solid var(--border);
+    border-radius:6px;
+    color:var(--text);
+    font-family:var(--mono);
+    font-size:13px;
+  }
+  input::placeholder{color:var(--muted-dim);}
+  input:focus{outline:none;border-color:var(--cyan-dim);}
+  .conn-row{display:flex;gap:8px;align-items:flex-end;}
+  .conn-row input{flex:1;}
+  .btn-ghost{
+    font-family:var(--mono);
+    font-size:12px;
+    background:var(--surface-2);
+    color:var(--text);
+    border:1px solid var(--border);
+    border-radius:6px;
+    padding:10px 14px;
+    cursor:pointer;
+    white-space:nowrap;
+  }
+  .btn-ghost:hover{border-color:var(--cyan-dim);}
+  .conn-status{
+    margin-top:12px;
+    font-family:var(--mono);
+    font-size:12px;
+    color:var(--muted);
+    display:flex;
+    align-items:center;
+    gap:8px;
+  }
+  .warn-note{
+    margin-top:12px;
+    font-size:12px;
+    color:var(--amber);
+    line-height:1.5;
+    border-left:2px solid var(--amber);
+    padding-left:10px;
+  }
 
-    table {
-      width: 70%;
-      border-collapse: collapse;
-      margin-top: 20px;
-      background-color: #fff;
-    }
+  .log{
+    font-family:var(--mono);
+    font-size:11.5px;
+    line-height:1.8;
+    max-height:260px;
+    overflow-y:auto;
+  }
+  .log-entry{
+    display:grid;
+    grid-template-columns:64px 46px 1fr 40px;
+    gap:8px;
+    color:var(--muted);
+    border-bottom:1px solid rgba(255,255,255,0.03);
+    padding:2px 0;
+  }
+  .log-entry .method{color:var(--cyan);}
+  .log-entry .status-ok{color:var(--cyan);}
+  .log-entry .status-err{color:var(--red);}
+  .log-empty{color:var(--muted-dim);font-size:12px;}
 
-    th, td {
-      padding: 12px;
-      text-align: left;
-    }
+  /* ---------- Right column: auth ---------- */
+  .tabs{display:flex;gap:4px;margin-bottom:18px;}
+  .tab{
+    font-family:var(--mono);
+    font-size:12px;
+    letter-spacing:0.03em;
+    padding:9px 18px;
+    border-radius:6px;
+    color:var(--muted);
+    cursor:pointer;
+    border:1px solid transparent;
+  }
+  .tab.active{
+    background:var(--surface-2);
+    color:var(--text);
+    border-color:var(--border);
+  }
+  form{display:none;flex-direction:column;gap:14px;}
+  form.active{display:flex;}
+  .field{display:flex;flex-direction:column;}
+  button.submit{
+    margin-top:6px;
+    padding:12px;
+    border:none;
+    border-radius:6px;
+    background:var(--cyan);
+    color:#06211d;
+    font-family:var(--mono);
+    font-weight:700;
+    font-size:13px;
+    letter-spacing:0.02em;
+    cursor:pointer;
+  }
+  button.submit:hover{background:#4de3cd;}
+  button.submit:disabled{background:var(--muted-dim);color:var(--surface);cursor:not-allowed;}
 
-    th {
-      background-color: #2980b9;
-      color: white;
-    }
+  .msg{
+    font-family:var(--mono);
+    font-size:12px;
+    padding:10px 12px;
+    border-radius:6px;
+    display:none;
+  }
+  .msg.error{display:block;background:rgba(239,91,78,0.1);color:var(--red);border:1px solid rgba(239,91,78,0.25);}
+  .msg.success{display:block;background:rgba(51,214,192,0.08);color:var(--cyan);border:1px solid rgba(51,214,192,0.25);}
 
-    tr:nth-child(even) {
-      background-color: #f4f6f8;
-    }
+  .session{
+    margin-top:18px;
+    background:rgba(51,214,192,0.06);
+    border:1px solid rgba(51,214,192,0.25);
+    border-radius:8px;
+    padding:14px 16px;
+    display:none;
+    font-size:13px;
+  }
+  .session.active{display:flex;justify-content:space-between;align-items:center;gap:12px;}
+  .session .who{font-family:var(--mono);color:var(--cyan);}
+  .session .sub{color:var(--muted);font-size:11px;}
+  .logout{
+    font-family:var(--mono);
+    font-size:11px;
+    background:none;
+    border:1px solid rgba(239,91,78,0.3);
+    color:var(--red);
+    padding:6px 10px;
+    border-radius:5px;
+    cursor:pointer;
+  }
+  .logout:hover{background:rgba(239,91,78,0.08);}
 
-    tr:hover {
-      background-color: #e1ecf4;
-    }
-
-    input {
-      padding: 10px;
-      margin-right: 10px;
-    }
-
-    button {
-      padding: 8px 14px;
-      border: none;
-      color: white;
-      cursor: pointer;
-      border-radius: 4px;
-    }
-
-    .add-btn {
-      background-color: #27ae60;
-    }
-
-    .list-btn {
-      background-color: #2980b9;
-      margin-top: 20px;
-    }
-
-    .delete-btn {
-      background-color: #e74c3c;
-    }
-
-    #formMsg {
-      margin-top: 10px;
-      font-weight: bold;
-    }
-  </style>
+  /* ---------- Users table ---------- */
+  .users-panel{
+    grid-column:1 / -1;
+  }
+  table{width:100%;border-collapse:collapse;}
+  thead th{
+    text-align:left;
+    font-family:var(--mono);
+    font-size:10.5px;
+    text-transform:uppercase;
+    letter-spacing:0.07em;
+    color:var(--muted-dim);
+    border-bottom:1px solid var(--border);
+    padding:8px 10px;
+  }
+  tbody td{
+    padding:11px 10px;
+    border-bottom:1px solid rgba(255,255,255,0.03);
+    font-size:13.5px;
+    
+  }
+  tbody tr:hover{background:rgba(255,255,255,0.015);}
+  td.id{font-family:var(--mono);color:var(--muted-dim);font-size:12px;}
+  td.email{color:var(--muted);font-size:12.5px;}
+  .empty-state{
+    text-align:center;
+    padding:32px 0;
+    color:var(--muted-dim);
+    font-family:var(--mono);
+    font-size:12.5px;
+  }
+</style>
 </head>
-
 <body>
 
-  <div class="header">
-    <img src="https://a0.awsstatic.com/libra-css/images/logos/aws_logo_smile_1200x630.png">
-    <h2>Welcome to Multicloud DevOps</h2>
+<header>
+  <div class="brand">
+    <h1>auth<span class="dim">.gateway</span></h1>
+    <span class="eyebrow">EC2 · FLASK · RDS MYSQL</span>
+  </div>
+  <div class="health" id="health">
+    <span class="dot" id="healthDot"></span>
+    <span id="healthText">not connected</span>
+  </div>
+</header>
+
+<main>
+  <!-- LEFT: connection + log -->
+  <div>
+    <div class="panel">
+      <h2>Request log</h2>
+      <div class="log" id="log">
+        <div class="log-empty">Requests will appear here as you use the form.</div>
+      </div>
+    </div>
   </div>
 
-  <!-- List Users Button -->
-  <button class="list-btn" onclick="loadUsers()">List Users</button>
+  <!-- RIGHT: auth -->
+  <div>
+    <div class="panel">
+      <div class="tabs" id="tabs">
+        <div class="tab active" data-target="loginForm">Log in</div>
+        <div class="tab" data-target="signupForm">Create account</div>
+      </div>
 
-  <!-- User Table -->
-  <table id="userTable">
-    <tr>
-      <th>ID</th>
-      <th>Name</th>
-      <th>Email</th>
-      <th>Actions</th>
-      <th>City</th>
-    </tr>
-  </table>
+      <form id="loginForm" class="active">
+        <div class="msg" id="loginMsg"></div>
+        <div class="field">
+          <label>Email</label>
+          <input type="email" id="loginEmail" required />
+        </div>
+        <div class="field">
+          <label>Password</label>
+          <input type="password" id="loginPassword" required />
+        </div>
+        <button class="submit" type="submit">Log in</button>
+      </form>
 
-  <!-- Add User Form -->
-  <h3>Add New User</h3>
-  <form id="userForm">
-    <input type="text" id="name" placeholder="Enter Name" required>
-    <input type="email" id="email" placeholder="Enter Email" required>
-    <button class="add-btn" type="submit">Add User</button>
-  </form>
+      <form id="signupForm">
+        <div class="msg" id="signupMsg"></div>
+        <div class="field">
+          <label>Username</label>
+          <input type="text" id="signupUsername" required />
+        </div>
+        <div class="field">
+          <label>Email</label>
+          <input type="email" id="signupEmail" required />
+        </div>
+        <div class="field">
+          <label>Password</label>
+          <input type="password" id="signupPassword" required />
+        </div>
+        <button class="submit" type="submit">Create account</button>
+      </form>
 
-  <p id="formMsg"></p>
+      <div class="session" id="session">
+        <div>
+          <div class="who" id="sessionUser"></div>
+          <div class="sub">session active</div>
+        </div>
+        <button class="logout" id="logoutBtn">Log out</button>
+      </div>
+    </div>
+  </div>
 
-  <script>
-    const backendIP = "http://172.31.20.167:5000";
+  <!-- USERS TABLE -->
+  <div class="panel users-panel">
+    <h2>Registered users</h2>
+    <div id="usersArea">
+      <div class="empty-state">No data loaded yet.</div>
+    </div>
+    <button class="btn-ghost" id="refreshBtn" style="margin-top:12px;">Refresh list</button>
+  </div>
+</main>
 
-    // Load Users
-    function loadUsers() {
-      const table = document.getElementById("userTable");
+<script>
+  // Set this to your backend's PUBLIC IP or domain — a private 172.x/10.x
+  // address will not be reachable from a browser outside the VPC.
+  const API_BASE = 'http://<your-ec2-public-ip>:5000';
 
-      // Reset table
-      table.innerHTML = `
-        <tr>
-          <th>ID</th>
-          <th>Name</th>
-          <th>Email</th>
-          <th>Actions</th>
-        </tr>
-      `;
+  const $ = (id) => document.getElementById(id);
 
-      fetch(`${backendIP}/users`)
-        .then(res => res.json())
-        .then(users => {
-          users.forEach(user => {
-            const row = table.insertRow();
+  function apiUrl(path){
+    return API_BASE.replace(/\/$/, '') + path;
+  }
 
-            row.insertCell(0).innerText = user.id;
-            row.insertCell(1).innerText = user.name;
-            row.insertCell(2).innerText = user.email;
+  // ---------- Request log + health ----------
+  const logEl = $('log');
+  const healthDot = $('healthDot');
+  const healthText = $('healthText');
+  let entries = 0;
 
-            const actionCell = row.insertCell(3);
+  function timeNow(){
+    return new Date().toLocaleTimeString('en-GB', {hour12:false});
+  }
 
-            const deleteBtn = document.createElement("button");
-            deleteBtn.innerText = "Delete";
-            deleteBtn.className = "delete-btn";
+  function logRequest(method, path, status, ms){
+    entries++;
+    if(entries === 1) logEl.innerHTML = '';
+    const ok = status >= 200 && status < 300;
+    const row = document.createElement('div');
+    row.className = 'log-entry';
+    row.innerHTML = `
+      <span>${timeNow()}</span>
+      <span class="method">${method}</span>
+      <span>${path}</span>
+      <span class="${ok ? 'status-ok' : 'status-err'}">${status ?? 'ERR'}</span>
+    `;
+    logEl.prepend(row);
+    setHealth(ok, ms);
+  }
 
-            deleteBtn.onclick = () => deleteUser(user.id);
-
-            actionCell.appendChild(deleteBtn);
-          });
-        })
-        .catch(err => console.error(err));
+  function setHealth(online, ms){
+    if(online){
+      healthDot.className = 'dot online';
+      healthText.textContent = `online · ${ms}ms`;
+    } else {
+      healthDot.className = 'dot offline';
+      healthText.textContent = 'unreachable';
     }
+  }
 
-    // Delete User
-    function deleteUser(id) {
-      if (!confirm("Delete this user?")) return;
-
-      fetch(`${backendIP}/users/delete/${id}`, {
-        method: "DELETE"
-      })
-      .then(res => res.json())
-      .then(result => {
-        alert(result.message || result.error);
-        loadUsers();
-      })
-      .catch(err => console.error(err));
+  async function apiRequest(method, path, body){
+    const start = performance.now();
+    try {
+      const res = await fetch(apiUrl(path), {
+        method,
+        headers: body ? { 'Content-Type': 'application/json' } : undefined,
+        body: body ? JSON.stringify(body) : undefined
+      });
+      const ms = Math.round(performance.now() - start);
+      let data = {};
+      try { data = await res.json(); } catch(_) {}
+      logRequest(method, path, res.status, ms);
+      return { ok: res.ok, status: res.status, data };
+    } catch(err){
+      const ms = Math.round(performance.now() - start);
+      logRequest(method, path, 0, ms);
+      return { ok: false, status: 0, data: { error: err.message } };
     }
+  }
 
-    // Add User
-    document.getElementById("userForm").addEventListener("submit", function(e) {
-      e.preventDefault();
-
-      const name = document.getElementById("name").value;
-      const email = document.getElementById("email").value;
-
-      fetch(`${backendIP}/users/add`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ name, email })
-      })
-      .then(res => res.json())
-      .then(result => {
-        document.getElementById("formMsg").textContent =
-          result.message || result.error;
-
-        document.getElementById("userForm").reset();
-        loadUsers();
-      })
-      .catch(err => console.error(err));
+  // ---------- Tabs ----------
+  document.querySelectorAll('.tab').forEach(tab => {
+    tab.addEventListener('click', () => {
+      document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+      document.querySelectorAll('form').forEach(f => f.classList.remove('active'));
+      tab.classList.add('active');
+      $(tab.dataset.target).classList.add('active');
     });
+  });
 
-    // Auto load on page start
-    loadUsers();
-  </script>
+  function showMsg(el, text, isError){
+    el.textContent = text;
+    el.className = 'msg ' + (isError ? 'error' : 'success');
+  }
 
+  // ---------- Session ----------
+  function setSession(user){
+    if(user){
+      $('sessionUser').textContent = `${user.username} · ${user.email}`;
+      $('session').classList.add('active');
+    } else {
+      $('session').classList.remove('active');
+    }
+  }
+  $('logoutBtn').addEventListener('click', () => setSession(null));
+
+  // ---------- Signup ----------
+  $('signupForm').addEventListener('submit', async (e) => {
+    e.preventDefault();
+    const msg = $('signupMsg');
+    msg.className = 'msg';
+    const btn = e.target.querySelector('button');
+    btn.disabled = true;
+
+    const payload = {
+      username: $('signupUsername').value.trim(),
+      email: $('signupEmail').value.trim(),
+      password: $('signupPassword').value
+    };
+
+    const { ok, data } = await apiRequest('POST', '/api/signup', payload);
+    if(ok){
+      showMsg(msg, data.message || 'Account created. You can log in now.', false);
+      e.target.reset();
+      loadUsers();
+    } else {
+      showMsg(msg, data.error || 'Signup failed.', true);
+    }
+    btn.disabled = false;
+  });
+
+  // ---------- Login ----------
+  $('loginForm').addEventListener('submit', async (e) => {
+    e.preventDefault();
+    const msg = $('loginMsg');
+    msg.className = 'msg';
+    const btn = e.target.querySelector('button');
+    btn.disabled = true;
+
+    const payload = {
+      email: $('loginEmail').value.trim(),
+      password: $('loginPassword').value
+    };
+
+    const { ok, data } = await apiRequest('POST', '/api/login', payload);
+    if(ok){
+      showMsg(msg, data.message || 'Logged in.', false);
+      setSession(data.user);
+      e.target.reset();
+    } else {
+      showMsg(msg, data.error || 'Login failed.', true);
+    }
+    btn.disabled = false;
+  });
+
+  // ---------- Users list ----------
+  async function loadUsers(){
+    const area = $('usersArea');
+    const { ok, data } = await apiRequest('GET', '/api/users');
+    if(!ok){
+      area.innerHTML = `<div class="empty-state" style="color:var(--red);">${escapeHtml(data.error || 'Failed to load users')}</div>`;
+      return;
+    }
+    if(!Array.isArray(data) || data.length === 0){
+      area.innerHTML = '<div class="empty-state">No users yet — create one on the right.</div>';
+      return;
+    }
+    area.innerHTML = `
+      <table>
+        <thead>
+          <tr><th>ID</th><th>Username</th><th>Email</th></tr>
+        </thead>
+        <tbody>
+          ${data.map(u => `
+            <tr>
+              <td class="id">#${u.id}</td>
+              <td>${escapeHtml(u.username)}</td>
+              <td class="email">${escapeHtml(u.email)}</td>
+            </tr>
+          `).join('')}
+        </tbody>
+      </table>
+    `;
+  }
+
+  function escapeHtml(str){
+    const div = document.createElement('div');
+    div.textContent = str ?? '';
+    return div.innerHTML;
+  }
+
+  $('refreshBtn').addEventListener('click', loadUsers);
+  loadUsers();
+</script>
 </body>
 </html>
