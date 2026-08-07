@@ -32,6 +32,7 @@ cd python-backend-testing
 
 3. Create the database and table (example):
 
+``` sql
 CREATE DATABASE IF NOT EXISTS cloud;
 USE cloud;
 DROP TABLE IF EXISTS users;
@@ -45,6 +46,8 @@ CREATE TABLE users (
     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
 );
 exit
+```
+
 
 4. Configure database connection:
 
